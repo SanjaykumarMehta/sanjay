@@ -1,0 +1,635 @@
+
+
+<%@page import="java.sql.Statement"%>
+<%@page import="java.io.FileInputStream"%>
+<%@page import="java.io.FileOutputStream"%>
+<%@page import="java.io.InputStream"%>
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.Connection"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Blog </title>
+        <meta name="description" content="">
+        <meta name="author" content="Ktc-industry">
+        <meta name="keywords" content="HTML, CSS, HTML5, template, corporate, jQuery, portfolio, theme, business">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, width=device-width">
+
+
+        <!-- stylesheets -->
+
+        <link rel="stylesheet" href="css/grid.css" />
+        <link rel="stylesheet" href="css/style.css" />
+        <link rel="stylesheet" href="css/darkblue.css" />
+        <link rel="stylesheet" href="css/responsive.css" />
+        <link rel="stylesheet" href="css/animate.css" />
+        <link type="text/css" rel="stylesheet" href="css/style1.css" />
+        <!-- Nivo slider stylesheer -->
+        <link rel="stylesheet" href="css/nivo-slider.css"/>
+        <!-- google web fonts -->
+        <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;subset=latin,latin-ext,cyrillic-ext' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=Raleway:400,300,500,600,700,800,900,200,100' rel='stylesheet' type='text/css'>
+        <!-- Icons -->
+        <link href="css/font-awesome.css" rel="stylesheet" type="text/css"/>
+        <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+
+
+
+        <!--[if lt IE 9]>
+            <script src="js/html5shiv.js"></script>
+        <![endif]-->
+
+        <!--[if lt IE 9]>
+            <script src="js/selectivizr-min.js"></script>
+        <![endif]-->
+
+    </head>
+
+    <body>
+        <!-- .header-wrapper start -->
+        <div id="header-wrapper" class="clearfix">
+            <!-- .top-bar start -->
+            <section id="top-bar-wrapper">
+                <div id="top-bar" class="clearfix">
+                    <ul class="contact-info ">
+
+                        <li>
+                            <span><a href=""><h1>The Resistance</h1></a></span>
+                        </li>
+                        <li id="l1">
+                            <a id="modal_trigger" href="#modal">Please Login</a>
+                        </li>
+                    </ul><!-- .contact-info end -->
+                </div><!-- .top-bar end -->
+            </section><!-- .top-bar-wrapper end -->
+
+        </div><!-- .header-wrapper end -->
+
+        <section class="footer-wrapper"></section>
+
+
+        <!-- .page-content start -->
+        <section class="page-content">
+            <div class="container">
+                <br><br>
+            </div>
+            <!-- .container start -->
+            <div class="container">
+
+                <!-- .row start -->
+                <div class="row">
+                    <!-- .grid_3.aside-right start -->
+                    <aside class="grid_3 aside-left triggerAnimation animated" data-animate="fadeInRight">
+
+                        <div class="triggerAnimation animated" data-animate="fadeInLeft">
+
+
+                            <section class="accordion">
+                                <div class="title">
+                                    <a id="myHeader1" href="javascript:showonlyone('newboxes1');">Broadcast Message</a>
+                                </div>
+
+
+
+                                <div class="title">
+                                    <a id="myHeader2" href="javascript:showonlyone('newboxes2');" >Saved Messages</a>
+                                </div>
+
+
+
+                                <div class="title" >
+                                    
+                                    <a id="myHeader3" href="javascript:showonlyone('newboxes3');"  >Log out</a>
+                               
+                                </div>
+
+
+                            </section><!-- .accordion end -->
+                        </div><!-- .triggerAnimation.animated end -->
+
+
+                    </aside><!-- .grid_3.aside-right end -->
+                    <div class="newboxes" id="newboxes1" style="display: block;">
+                        <!-- .grid_9.blog-posts start -->
+                        <ul class="grid_9 blog-posts blog-post-small-image triggerAnimation animated" data-animate="fadeInLeft">
+                            <%!
+                                public int nullIntconv(String str) {
+                                    int conv = 0;
+                                    if (str == null) {
+                                        str = "0";
+                                    } else if ((str.trim()).equals("null")) {
+                                        str = "0";
+                                    } else if (str.equals("")) {
+                                        str = "0";
+                                    }
+                                    try {
+                                        conv = Integer.parseInt(str);
+                                    } catch (Exception e) {
+                                    }
+                                    return conv;
+                                }
+                            %>
+                            <%
+                                Connection con = null;
+
+                                Class.forName("com.mysql.jdbc.Driver");
+                                con = DriverManager.getConnection("jdbc:mysql://localhost:3306/resistance", "root", "root");
+
+                                //  PreparedStatement pstmt = con.prepareStatement("select * from blogpost limit 1,10");
+                                ResultSet rsPagination = null;
+                                ResultSet rsPagination1 = null;
+                                ResultSet rsRowCnt = null;
+
+                                PreparedStatement psPagination = null;
+
+                                PreparedStatement psRowCnt = null;
+
+                                int iShowRows = 3;  // Number of records show on per page
+                                int iTotalSearchRecords = 3;  // Number of pages index shown
+
+                                int iTotalRows = nullIntconv(request.getParameter("iTotalRows"));
+                                int iTotalPages = nullIntconv(request.getParameter("iTotalPages"));
+                                int iPageNo = nullIntconv(request.getParameter("iPageNo"));
+                                int cPageNo = nullIntconv(request.getParameter("cPageNo"));
+
+                                int iStartResultNo = 0;
+                                int iEndResultNo = 0;
+
+                                if (iPageNo == 0) {
+                                    iPageNo = 0;
+                                } else {
+                                    iPageNo = Math.abs((iPageNo - 1) * iShowRows);
+                                }
+
+                                String sqlPagination = "SELECT SQL_CALC_FOUND_ROWS * FROM blogpost  ORDER BY blogid DESC limit " + iPageNo + "," + iShowRows + "";
+
+                                psPagination = con.prepareStatement(sqlPagination);
+                                rsPagination = psPagination.executeQuery();
+
+                                //// this will count total number of rows
+                                String sqlRowCnt = "SELECT FOUND_ROWS() as cnt";
+                                psRowCnt = con.prepareStatement(sqlRowCnt);
+                                rsRowCnt = psRowCnt.executeQuery();
+
+                                if (rsRowCnt.next()) {
+                                    iTotalRows = rsRowCnt.getInt("cnt");
+                                }%>
+
+                            <%  while (rsPagination.next()) {
+                            %>
+
+
+
+                            <!-- .blog-post.format-gallery start -->
+                            <li class="blog-post format-gallery">
+                                <article class="post-body">
+
+                                    <!-- .post-info start -->
+                                    <div class="post-info-container">
+
+                                        <ul class="date-category">
+                                            <li class="post-date">
+                                                <span class="day"><%= rsPagination.getString(5)%></span>
+
+                                            </li>
+
+                                            <li class="post-category">
+                                                <i class="icon-image  icon-user fx fx-2x "></i>
+                                            </li>
+                                        </ul>
+
+                                        <div class="post-info">
+                                            <a href="">
+                                                <h3><%= rsPagination.getString(2)%></h3>
+                                            </a>
+
+                                            <ul class="post-meta">
+                                                <li class="icon-clock">
+                                                    <span><%= rsPagination.getString(4)%></span>
+                                                </li>
+                                                <li class="icon-user">
+                                                    <a href=""><%= rsPagination.getString(5)%></a>
+                                                </li>
+
+
+
+
+                                            </ul><!-- .post-meta end -->
+
+                                            <ul class="post-meta">
+                                                <P> <%= rsPagination.getString(3)%></p>
+                                            </ul>
+                                        </div><!-- .post-info end -->
+
+
+
+
+
+                                        <div class="post-info">
+
+                                            <ul class="post-meta">
+                                                <li class="icon-clock">
+                                                    <a id="displayText" href="javascript:toggle();">Hide Comments</a>
+                                                </li>
+                                                <li class="icon-user ">
+                                                    <a  id="displayText1" href="javascript:toggle1();">Add Comment</a>
+                                                </li>
+
+                                                <li class="icon-comments">
+                                                    <a href="">Save Message</a>
+                                                </li>
+
+
+                                            </ul><!-- .post-meta end -->
+                                        </div><!-- .post-info end -->
+                                    </div><!-- .post-info-container end -->
+
+
+                                </article><!-- .post-body end -->
+
+                                <div class='pane2' id="toggleText1" style="display: none">
+                                    <div class="post-info-container float-right">
+
+                                        <form action="Comments" method="post">
+                                            <textarea style="width:390px;height:23px" type="text" name="comment"></textarea><br />
+                                            <input type="submit" value=" Comment " class="comment_submit" />
+                                        </form>
+                                    </div>
+                                </div>
+                                <%
+                                    Statement psPagination1 = con.createStatement();
+                                    rsPagination1 = psPagination1.executeQuery("select * from comments where blogid_fk= 1 ");
+                                    //// this will count total number of rows
+                                %>
+                                <% while (rsPagination1.next()) {%>
+                                <div class='pane2' id="toggleText" style="display: none">
+
+                                    <div class="post-info-container float-right">
+                                        <ul class="date-category">
+                                            <li class="post-date  ">
+                                                <span class="day "><%= rsPagination1.getString(4)%></span>
+
+                                            </li>
+
+                                            <li class="post-category">
+                                                <i class="icon-image  icon-user fx fx-2x "></i>
+                                            </li>
+                                        </ul>
+                                        <ul class="post-meta1">
+                                            <li class="icon-clock">
+                                                <span><%= rsPagination1.getString(3)%></span>
+                                            </li>
+
+                                        </ul><!-- .post-meta end -->
+                                        <ul class="post-meta1">
+                                            <P> <%= rsPagination1.getString(2)%></p>
+                                        </ul>
+                                    </div>
+
+                                </div>
+                                <%}%>    
+                            </li><!-- .blog-post.format-gallery end -->
+
+                            <%
+
+                                }
+
+                                try {
+                                    if (iTotalRows < (iPageNo + iShowRows)) {
+                                        iEndResultNo = iTotalRows;
+                                    } else {
+                                        iEndResultNo = (iPageNo + iShowRows);
+                                    }
+
+                                    iStartResultNo = (iPageNo + 1);
+                                    iTotalPages = ((int) (Math.ceil((double) iTotalRows / iShowRows)));
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            %>
+
+
+
+
+                            <li class="pagination">
+                                <ul>     
+                                    <%        //// index of pages 
+                                        int i = 0;
+                                        int cPage = 0;
+                                        if (iTotalRows != 0) {
+                                            cPage = ((int) (Math.ceil((double) iEndResultNo / (iTotalSearchRecords * iShowRows))));
+
+                                            int prePageNo = (cPage * iTotalSearchRecords) - ((iTotalSearchRecords - 1) + iTotalSearchRecords);
+                                            if ((cPage * iTotalSearchRecords) - (iTotalSearchRecords) > 0) {
+                                    %>
+
+                                    <li> <a href="Resistance.jsp?iPageNo=<%=prePageNo%>&cPageNo=<%=prePageNo%>"> << </a></li>
+                                        <%
+                                            }
+
+                                            for (i = ((cPage * iTotalSearchRecords) - (iTotalSearchRecords - 1)); i <= (cPage * iTotalSearchRecords); i++) {
+                                                if (i == ((iPageNo / iShowRows) + 1)) {
+                                        %>
+                                    <li><a href="Resistance.jsp?iPageNo=<%=i%>" style="cursor:pointer;color: red"><b><%=i%></b></a></li>
+                                                <%
+                                                } else if (i <= iTotalPages) {
+                                                %>
+                                    <li> <a href="Resistance.jsp?iPageNo=<%=i%>"><%=i%></a></li>
+                                        <%
+                                                }
+                                            }
+                                            if (iTotalPages > iTotalSearchRecords && i < iTotalPages) {
+                                        %>
+                                    <li><a href="Resistance.jsp?iPageNo=<%=i%>&cPageNo=<%=i%>"> >> </a> </li>
+                                        <%
+                                                }
+                                            }
+                                        %>
+                                    <li class="current-page">
+                                        <span>&nbsp;Rows <%=iStartResultNo%> - <%=iEndResultNo%> Total <%=iTotalRows%></span>
+                                    </li>
+
+
+                                </ul>
+                                <%
+                                    try {
+                                        if (psPagination != null) {
+                                            psPagination.close();
+                                        }
+                                        if (rsPagination != null) {
+                                            rsPagination.close();
+                                        }
+
+                                        if (psRowCnt != null) {
+                                            psRowCnt.close();
+                                        }
+                                        if (rsRowCnt != null) {
+                                            rsRowCnt.close();
+                                        }
+
+                                        if (con != null) {
+                                            con.close();
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                %>
+                            </li>
+                        </ul><!-- .grid_9.blog-posts end -->
+
+
+                    </div><!-- .row end -->
+                </div><!-- .row end -->
+            </div><!-- .container end -->
+        </section><!-- .page-content end -->
+
+
+        <!-- .footer-wrapper start -->
+        <section class="footer-wrapper">
+
+
+            <!-- .copyright-container start -->
+            <div class="copyright-container">
+                <!-- .container start -->
+                <div class="container">
+                    <!-- .row start -->
+                    <div class="row">
+                        <section class="grid_7">
+                            <center>
+                                <div class="footer-breadcrumbs">
+                                    <p>Copyright © 2014 Sanjay Mehta .
+                                </div>
+                            </center> 
+                        </section>
+
+                    </div><!-- .row end -->
+                </div><!-- .container end -->
+            </div><!-- .copyright-container end -->
+
+            <a href="#" class="scroll-up">Scroll</a>
+        </section><!-- .footer-wrapper end -->
+
+
+
+        <div id="modal" class="popupContainer" style="display:none;">
+            <header class="popupHeader">
+                <span class="header_title">Login</span>
+                <span class="modal_close"><i class="fa fa-times"></i></span>
+            </header>
+
+            <section class="popupBody">
+                <!-- Social Login -->
+                <div class="social_login">
+                    <div class="">
+                        <a href="#" class="social_box fb">
+                            <span class="icon"><i class="fa fa-facebook"></i></span>
+                            <span class="icon_title">Connect with Facebook</span>
+
+                        </a>
+
+                        <a href="#" class="social_box google">
+                            <span class="icon"><i class="fa fa-google-plus"></i></span>
+                            <span class="icon_title">Connect with Google</span>
+                        </a>
+                    </div>
+
+                    <div class="centeredText">
+                        <span>Or use your Email address</span>
+                    </div>
+
+                    <div class="action_btns">
+                        <div class="one_half"><a href="#" id="login_form" class="btn" >Login</a></div>
+                        <div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
+                    </div>
+                </div>
+
+                <!-- Username & Password Login form -->
+                <div class="user_login">
+                    <form  method="post" action="login">
+                        <label>Email / Username</label>
+                        <input type="text" name="emailid" placeholder="Email Id" autofocus required autocomplete="off"/>
+                        <br />
+
+                        <label>Password</label>
+                        <input  type="password" name="password" placeholder="Your Password" autofocus required autocomplete="off" />
+                        <br />
+
+                        <div class="checkbox">
+                            <input id="remember" type="checkbox" />
+                            <label for="remember">Remember me on this computer</label>
+                        </div>
+
+                        <div class="action_btns">
+                            <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+                            <div class="one_half last"><input type="submit"  value="Login" class="btn btn_red"/>
+
+                            </div>
+                        </div>
+                    </form>
+
+                    <a href="#" class="forgot_password">Forgot password?</a>
+                </div>
+
+                <!-- Register Form -->
+                <div class="user_register">
+                    <form   method="post" action="userregister">
+                        <label>Full Name</label>
+                        <input type="text"  name="username" placeholder="User Name " autofocus required autocomplete="off" />
+                        <br />
+
+                        <label>Email Address</label>
+                        <input type="email" name="emailid" placeholder="Email " autofocus required autocomplete="off"/>
+
+                        <br />
+
+                        <label>Password</label>
+                        <input  type="password" name="password" placeholder="Your Password" autofocus required autocomplete="off" />
+                        <br />
+
+                        <div class="checkbox">
+                            <input id="send_updates" type="checkbox" />
+                            <label for="send_updates">Send me occasional email updates</label>
+                        </div>
+
+                        <div class="action_btns">
+                            <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+                            <div class="one_half last"><input type="submit"  value="Register" class="btn btn_red"/></div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+
+
+        <!-- scripts -->
+        <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
+        <script  src="js/jquery-1.9.1.js"></script> <!-- jQuery library -->  
+        <script  src="js/jquery-migrate-1.2.1.min.js"></script> <!-- jQuery migrate -->
+        <script  src="js/jquery.placeholder.min.js"></script><!-- jQuery placeholder fix for old browsers -->
+        <script  src="js/waypoints.min.js"></script><!-- js for animating content -->
+        <script  src="js/jquery.stellar.min.js"></script><!-- parallax scrolling -->
+        <script  src="js/jquery.tweetscroll.js"></script> <!-- jQuery tweetscroll plugin -->
+        <script  src="js/jquery.carouFredSel-6.2.1-packed.js"></script><!-- CarouFredSel carousel plugin -->
+        <script  src="js/nicescroll.min.js"></script> <!-- Nice scroll Plugin -->
+        <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" src="js/jquery.leanModal.min.js"></script>
+
+
+
+        <script type="text/javascript" >
+            $(document).ready(function()
+            {
+                $(".comment_button").click(function() {
+
+                    var element = $(this);
+                    var I = element.attr("id");
+
+                    $("#slidepanel" + I).slideToggle(300);
+
+
+                    $(".header_title2").text('Close Comment');
+                    return false;
+                });
+                $(".comment_button1").click(function() {
+
+                    var element = $(this);
+                    var I = element.attr("id");
+
+                    $("#slidepane2" + I).slideToggle(300);
+                    $(this).toggleClass("active");
+                    $(".header_title1").text('Show Comment');
+                    return false;
+                });
+            });
+        </script>
+        <script type="text/javascript">
+            $("#modal_trigger").leanModal({top: 200, overlay: 0.6, closeButton: ".modal_close"});
+
+            $(function() {
+                // Calling Login Form
+                $("#login_form").click(function() {
+                    $(".social_login").hide();
+                    $(".user_login").show();
+                    return false;
+                });
+
+                // Calling Register Form
+                $("#register_form").click(function() {
+                    $(".social_login").hide();
+                    $(".user_register").show();
+                    $(".header_title").text('Register');
+                    return false;
+                });
+
+                // Going back to Social Forms
+                $(".back_btn").click(function() {
+                    $(".user_login").hide();
+                    $(".user_register").hide();
+                    $(".social_login").show();
+                    $(".header_title").text('Login');
+                    return false;
+                });
+
+            })
+        </script>
+        <script language="JavaScript">
+            function showonlyone(thechosenone) {
+                var newboxes = document.getElementsByTagName("div");
+                for (var x = 0; x < newboxes.length; x++) {
+                    name = newboxes[x].getAttribute("class");
+                    if (name == 'newboxes') {
+                        if (newboxes[x].id == thechosenone) {
+                            newboxes[x].style.display = 'block';
+                        }
+                        else {
+                            newboxes[x].style.display = 'none';
+                        }
+                    }
+                }
+            }
+
+        </script>
+        <script language="javascript">
+            function toggle() {
+                var ele = document.getElementById("toggleText");
+                var text = document.getElementById("displayText");
+
+                if (ele.style.display == "block") {
+                    ele.style.display = "none";
+                    text.innerHTML = "Show Comments";
+                }
+                else {
+                    ele.style.display = "block";
+                    text.innerHTML = "Hide Comments";
+                }
+
+
+            }
+        </script>
+        <script>
+            function toggle1() {
+
+                var ele1 = document.getElementById("toggleText1");
+                var text1 = document.getElementById("displayText1");
+
+                if (ele1.style.display == "block") {
+                    ele1.style.display = "none";
+                    text1.innerHTML = "Add Comment";
+                }
+                else {
+                    ele1.style.display = "block";
+                    text1.innerHTML = "Close Comment";
+                }
+            }
+        </script>
+    </body>
+</html>
